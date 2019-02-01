@@ -862,7 +862,7 @@ class CryptoBackendXmlSec1(CryptoBackend):
         :return: Boolean True if the signature was correct otherwise False.
         """
         if not isinstance(signedtext, six.binary_type):
-            signedtext = signedtext.encode('utf-8')
+            signedtext = signedtext.encode(encoding=ENCODING)
 
         _, fil = make_temp(
             signedtext,
@@ -959,9 +959,9 @@ class CryptoBackendXMLSecurity(CryptoBackend):
 
         xml = xmlsec.parse_xml(statement)
         signed = xmlsec.sign(xml, key_file)
-        signed_str = lxml.etree.tostring(signed, xml_declaration=False, encoding="UTF-8")
+        signed_str = lxml.etree.tostring(signed, xml_declaration=False, encoding=ENCODING)
         if not isinstance(signed_str, six.string_types):
-            signed_str = signed_str.decode("utf-8")
+            signed_str = signed_str.decode(encoding=ENCODING)
         return signed_str
 
     def validate_signature(self, signedtext, cert_file, cert_type, node_name, node_id, id_attr):
