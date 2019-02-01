@@ -58,6 +58,8 @@ from saml2.xmlenc import CipherValue
 from saml2.xmlenc import EncryptedData
 
 
+ENCODING = os.environ.get('PYSAML2_DEFAULT_ENCODING', 'utf-8')
+
 logger = logging.getLogger(__name__)
 
 SIG = '{{{ns}#}}{attribute}'.format(ns=ds.NAMESPACE, attribute='Signature')
@@ -116,7 +118,7 @@ def rm_xmltag(statement):
     try:
         _t = statement.startswith(XMLTAG)
     except TypeError:
-        statement = statement.decode()
+        statement = statement.decode(encoding=ENCODING)
         _t = statement.startswith(XMLTAG)
 
     if _t:
@@ -339,7 +341,7 @@ def make_temp(string, suffix='', decode=True, delete=True):
     ntf = NamedTemporaryFile(suffix=suffix, delete=delete)
     # Python3 tempfile requires byte-like object
     if not isinstance(string, six.binary_type):
-        string = string.encode('utf-8')
+        string = string.encode(encoding=ENCODING)
 
     if decode:
         ntf.write(base64.b64decode(string))
@@ -596,7 +598,7 @@ def make_str(txt):
     if isinstance(txt, six.string_types):
         return txt
     else:
-        return txt.decode()
+        return txt.decode(encoding=ENCODING)
 
 
 def read_cert_from_file(cert_file, cert_type):
@@ -612,7 +614,7 @@ def read_cert_from_file(cert_file, cert_type):
         return ''
 
     if cert_type == 'pem':
-        _a = read_file(cert_file, 'rb').decode()
+        _a = read_file(cert_file, 'rb').decode(encoding=ENCODING)
         _b = _a.replace('\r\n', '\n')
         lines = _b.split('\n')
 
@@ -773,7 +775,7 @@ class CryptoBackendXmlSec1(CryptoBackend):
         except XmlsecError as e:
             six.raise_from(EncryptError(com_list), e)
 
-        return output.decode('utf-8')
+        return output.decode(encoding=ENCODING)
 
     def decrypt(self, enctext, key_file, id_attr):
         """
@@ -799,7 +801,7 @@ class CryptoBackendXmlSec1(CryptoBackend):
         except XmlsecError as e:
             six.raise_from(DecryptError(com_list), e)
 
-        return output.decode('utf-8')
+        return output.decode(encoding=ENCODING)
 
     def sign_statement(self, statement, node_name, key_file, node_id, id_attr):
         """
@@ -841,9 +843,9 @@ class CryptoBackendXmlSec1(CryptoBackend):
 
         # this does not work if --store-signatures is used
         if output:
-            return output.decode("utf-8")
+            return output.decode(encoding=ENCODING)
         if stdout:
-            return stdout.decode("utf-8")
+            return stdout.decode(encoding=ENCODING)
         raise SignatureError(stderr)
 
     def validate_signature(self, signedtext, cert_file, cert_type, node_name, node_id, id_attr):
@@ -904,8 +906,8 @@ class CryptoBackendXmlSec1(CryptoBackend):
 
             pof = Popen(com_list, stderr=PIPE, stdout=PIPE)
             p_out, p_err = pof.communicate()
-            p_out = p_out.decode()
-            p_err = p_err.decode()
+            p_out = p_out.decode(encoding=ENCODING)
+            p_err = p_err.decode(encoding=ENCODING)
 
             if pof.returncode != 0:
                 errmsg = "returncode={code}\nerror={err}\noutput={out}".format(
